@@ -6,6 +6,9 @@
 body {
   background: #000;
 }
+a {
+  color: #fff;
+}
 
 .App {
   text-align: center;

@@ -1,43 +1,32 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useRouteMatch } from 'react-router-dom';
 import { Pokemon } from '../Pokemon/Pokemon';
 import './PokemonList.css';
 
-// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
-
-// offset  limit
-//   0       4    1-4
-//   6       4    7-10
-//   3       5    4-8
-
-const POKEMONS_PER_PAGE = 4;
-
+const POKEMONS_PER_PAGE = 8;
 
 // https://pokeapi.co/api/v2/pokemon?offset=0&limit=12
-function fetchPokemons(page){
+function fetchPokemons(page) {
   const limit = POKEMONS_PER_PAGE;
   const offset = (page - 1) * POKEMONS_PER_PAGE;
-  
+
   return fetch(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`)
     .then(response => response.json())
     .then(data => {
-        console.log(data);
-        const list = data.results.map(pokemon => {
-          return {
-            name: pokemon.name,
-            id: pokemon.url.slice(34, -1)
-          }
-        });
-        const count = data.count;
+      const list = data.results.map(pokemon => {
+        return {
+          name: pokemon.name,
+          id: pokemon.url.slice(34, -1)
+        }
+      });
+      const count = data.count;
 
-        return {list, count};
+      return { list, count };
     });
 }
 
-// fetchPokemons(1).then((x) => console.log(1, x.map(({ id }) => id))); // 1-8
-// fetchPokemons(4).then((x) => console.log(4, x.map(({ id }) => id))); // 25-32
 
-
-export function PokemonList(){
+export function PokemonList() {
   const [pokemons, setPokemons] = useState([]);
   const [caughtList, setCaughtList] = useState(() => JSON.parse(localStorage.getItem('caughtPokemons')) ?? []);
 
@@ -46,14 +35,12 @@ export function PokemonList(){
 
   const [loading, setLoading] = useState(true);
 
-  console.log(caughtList);
-
   function togglePokemon(id) {
     setCaughtList(prev => {
       if (prev.includes(id)) {
         return prev.filter(item => item !== id);
       } else {
-        return [...prev, id]; 
+        return [...prev, id];
       }
     });
   }
@@ -73,24 +60,23 @@ export function PokemonList(){
 
   const pages = Math.ceil(total / POKEMONS_PER_PAGE);
 
-  function incrementPage(){
+  function incrementPage() {
     setPage(prevPage => {
-        return prevPage + 1;
+      return prevPage + 1;
     });
   }
 
-  function decrementPage(){
+  function decrementPage() {
     setPage(prevPage => prevPage - 1);
   }
 
   const prevDisabled = page === 1 || loading;
   const nextDisabled = page === pages || loading;
 
-  
-  // Безопаснее передать в setIsFront функцию. 
-  // Эта функция принимает предыдущее состояние и возвращает новое. 
-  // Она является чистой, поскольку зависит только от своих аргументов.
 
+  // routing
+  let match = useRouteMatch();
+  console.log(match.params.number);
 
   return (
     <div>
@@ -111,21 +97,23 @@ export function PokemonList(){
       </div>
 
       <div className="pagination">
-        <button 
+        <Link
           className="prev"
           onClick={decrementPage}
           disabled={prevDisabled}
+          to={`/${page - 1}`}
         >
           Предыдущая страница
-        </button>
+        </Link>
         <span>Страница {page} из {pages}</span>
-        <button 
+        <Link
           className="next"
           onClick={incrementPage}
           disabled={nextDisabled}
+          to={`/${page + 1}`}
         >
           Следующая страница
-        </button>
+        </Link>
       </div>
     </div>
   )
